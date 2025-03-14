@@ -1,8 +1,27 @@
 const puppeteer = require("puppeteer");
+const fs = require("fs").promises; // Use fs.promises for async file operations
+const path = require("path");
+
+async function ensureDirectoryExists(directoryPath) {
+  try {
+    await fs.mkdir(directoryPath, { recursive: true });
+    console.log(`Directory created or already exists: ${directoryPath}`);
+  } catch (error) {
+    if (error.code !== "EEXIST") {
+      // Ignore if directory already exists
+      console.error(`Error creating directory ${directoryPath}:`, error);
+      throw error; // Re-throw the error to stop execution
+    }
+  }
+}
 
 async function generateScreenshots(domain, sizes) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
+
+  const screenshotsDir = path.join(__dirname, "public", "screenshots"); // Construct full path
+
+  await ensureDirectoryExists(screenshotsDir); // Ensure directory exists
 
   for (const size of sizes) {
     const { width, height, filename } = size;
@@ -11,8 +30,8 @@ async function generateScreenshots(domain, sizes) {
 
     try {
       await page.screenshot({
-        path: `public/screenshots/${filename}.png`,
-        fullPage: true, // Capture the full scrollable content
+        path: path.join(screenshotsDir, `${filename}.png`), // Use full path
+        fullPage: true,
       });
       console.log(`Screenshot ${filename}.png (${width}x${height}) captured.`);
     } catch (error) {
@@ -24,7 +43,7 @@ async function generateScreenshots(domain, sizes) {
 }
 
 async function main() {
-  const domain = process.argv[2]; // Get domain from command-line argument
+  const domain = process.argv[2];
   if (!domain) {
     console.error("Usage: node generate-screenshots.js <domain>");
     process.exit(1);
