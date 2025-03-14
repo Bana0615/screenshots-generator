@@ -19,7 +19,7 @@ async function generateScreenshots(domain, sizes) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  const screenshotsDir = path.join(__dirname, "public", "screenshots"); // Construct full path
+  const screenshotsDir = path.join(__dirname, "screenshots"); // Construct full path
 
   await ensureDirectoryExists(screenshotsDir); // Ensure directory exists
 
